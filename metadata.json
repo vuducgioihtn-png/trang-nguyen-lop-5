@@ -1,0 +1,6 @@
+{
+  "name": "IOE & Trạng Nguyên Tiếng Anh Lớp 5 - Luyện Thi Cấp Tỉnh",
+  "description": "Ứng dụng luyện từ vựng và thi thử IOE, Trạng Nguyên Tiếng Anh Cấp Tỉnh Khối 5 theo chuẩn GDPT 2018 với 4 dạng bài chuẩn, âm thanh phát âm và kho đề thi cập nhật liên tục.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
