@@ -1,4 +1,5 @@
-import express, { Request, Response } from 'express';
+import express from 'express';
+import type { Request, Response } from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
@@ -10,13 +11,14 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+// AI Studio reverse proxy forwards from 8080 to port 3000
+const PORT = 3000;
 
 app.use(express.json({ limit: '10mb' }));
 
 // Shared server-side Gemini client
 const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY || '',
+  apiKey: process.env.GEMINI_API_KEY,
   httpOptions: {
     headers: {
       'User-Agent': 'aistudio-build',
@@ -91,6 +93,13 @@ const questionSchema = {
 // API Endpoint to generate custom exams via Gemini
 app.post('/api/generate-exam', async (req: Request, res: Response) => {
   try {
+    if (!process.env.GEMINI_API_KEY) {
+      return res.status(400).json({
+        success: false,
+        error: 'Chưa cấu hình GEMINI_API_KEY. Vui lòng thiết lập API key trong Settings > Secrets.',
+      });
+    }
+
     const { grade = 5, unit = 'Đề Thi Tuyển Chọn IOE Cấp Tỉnh Toàn Diện', count = 10, difficulty = 'Cấp Tỉnh' } = req.body;
     const requestedCount = Math.min(Math.max(Number(count) || 10, 4), 30);
 
@@ -150,7 +159,9 @@ app.get('/api/health', (_req, res) => {
 });
 
 async function startServer() {
-  const isProduction = process.env.NODE_ENV === 'production';
+  const isProduction =
+    process.env.NODE_ENV === 'production' ||
+    process.env.npm_lifecycle_event === 'start';
 
   if (!isProduction) {
     const { createServer } = await import('vite');
@@ -166,8 +177,9 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, () => {
-    console.log(`Server running at http://localhost:${PORT}`);
+  const port = Number(PORT) || 3000;
+  app.listen(port, '0.0.0.0', () => {
+    console.log(`Server running at http://0.0.0.0:${port}`);
   });
 }
 
